@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>炫倭名人日记</title>
+    <style>
+        :root {
+            --main-color: #d32f2f;
+            --accent-color: #ffb300;
+            --background-color: #f0f2f5;
+            --content-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Meiryo', 'Noto Sans TC', sans-serif;
+            background-color: var(--background-color);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        #app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        /* 标题样式 */
+        #game-title {
+            background-color: var(--main-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        #game-title h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+        }
+
+        /* 左侧图片区域 */
+        .image-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* 图片容器 - 正方形比例 */
+#image-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* 改为100%实现正方形 */
+    background-color: #2c3e50;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+        #scene-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* 食用次数显示 */
+        #consumption-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--accent-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        /* 右侧内容区域 */
+        .content-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* 对话框 */
+        #dialogue-box {
+            background-color: var(--content-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--main-color);
+        }
+
+        #character-name {
+            font-weight: 700;
+            color: var(--main-color);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        #dialogue-text {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* 选项区域 */
+        #options-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        #options-box button {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--accent-color);
+            color: #333;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #options-box button:hover {
+            background-color: #e6a200;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 特殊按钮样式 */
+        .external-link {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+
+        .external-link:hover {
+            background-color: #388E3C !important;
+        }
+
+        .ending-style {
+            background-color: #2c3e50 !important;
+            color: white !important;
+        }
+
+        .ending-style:hover {
+            background-color: #34495e !important;
+        }
+
+        /* 游戏日志 */
+        #log-box {
+            background-color: var(--content-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        #log-box h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #444;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        #history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+
+        #history-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        #history-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* 控制面板 */
+        #control-panel {
+            background-color: #2c3e50;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #jump-input {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: white;
+        }
+
+        #control-panel button {
+            padding: 10px 20px;
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        #control-panel button:hover {
+            background-color: #b71c1c;
+        }
+
+        /* 飘字动画样式 */
+        .floating-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            animation: floatUp 1.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 1.2rem;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(1.1);
+            }
+        }
+
+        /* 动画播放器 */
+        #animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            z-index: 2000;
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 767px) {
+            #app-container {
+                padding: 0 8px;
+            }
+            
+            #game-title h1 {
+                font-size: 1.4rem;
+            }
+            
+            #dialogue-box {
+                padding: 15px;
+            }
+            
+            #options-box button {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+            
+            #control-panel {
+                flex-direction: column;
+            }
+            
+            #jump-input, #control-panel button {
+                width: 100%;
+            }
+            
+            .main-content {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <header id="game-title">
+            <h1>炫倭名人日记</h1>
+        </header>
+
+        <div class="main-content">
+            <div class="image-section">
+                <div id="image-container">
+                    <div id="consumption-display">食用次数：0</div>
+                    <img id="scene-image" alt="游戏场景" src="no.jpg">
+                </div>
+            </div>
+            
+            <div class="content-section">
+                <div id="dialogue-box">
+                    <p id="character-name">系统</p>
+                    <div id="dialogue-text">游戏加载中...</div>
+                </div>
+                
+                <div id="options-box">
+                    <!-- 选项将通过JavaScript动态生成 -->
+                </div>
+                
+                <div id="log-box">
+                    <h3>游戏日志</h3>
+                    <ul id="history-list">
+                        <li>游戏已启动</li>
+                    </ul>
+                </div>
+                
+                <div id="control-panel">
+                    <input type="text" id="jump-input" placeholder="输入场景编号 (如: 001, 002, 003)">
+                    <button onclick="manualJump()">跳转到编号</button>
+                    <button onclick="restartGame()">重新开始游戏</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="animation-overlay">
+            <p id="animation-text">正在播放动画...</p>
+            <p style="font-size: 1rem;">(此为模拟播放，实际需替换为视频元素)</p>
+        </div>
+    </div>
+
+    <script>
+        
+       // 游戏数据结构 - 修复版，加入更多网络梗
+const gameData = {
+    "001": {
+        name: "？？？",
+        text: "我，一个普通的打工族，今年男生，性别24岁，在某天加班到凌晨后眼前一黑...\n\n再醒来时，我发现自己变成了一头日本深山里的熊！\n\n「卧槽？这是哪门子转生服务？连个新手大礼包都没有吗？」",
+        image: "1/存底.png",
+        consumption: 2,
+        type: "dialogue",
+        next: "002"
+    },
+    "002": {
+        name: "我（熊）",
+        text: "最初的几天简直是地狱！\n\n而且深山老林里连个外卖都没有，我只能靠吃野果和...呃，倭倭头度日。\n\n「话说倭倭头味道其实还不错，就是有点咸...」",
+        image: "1/存底.png",
+        consumption: 3,
+        type: "dialogue",
+        next: "003"
+    },
+    "003": {
+        name: "我（熊）",
+        text: "慢慢地，我开始适应这具熊的身体。\n\n「熊生其实也挺好的，不用996，不用写代码，每天就是吃倭倭头和睡觉。」\n\n但内心深处，总觉得少了点什么...\n\n「难道我就要这样当一辈子普通的熊吗？」",
+        image: "1/开心.png",
+        consumption: 2,
+        type: "dialogue",
+        next: "004"
+    },
+    "004": {
+        name: "我（熊）",
+        text: "今天下起了倾盆大雨，雷电交加。\n\n「这天气也太夸张了吧？简直像在拍灾难片！」\n\n突然，一声巨响！山体崩塌了！\n\n「妈呀！差点被活埋！等等...那是什么？」",
+        image: "1/存底.png",
+        consumption: 4,
+        type: "dialogue",
+        next: "005"
+    },
+    "005": {
+        name: "我（熊）",
+        text: "崩塌的山体露出了一个隐藏的洞窟。\n\n「这剧情我熟啊！主角奇遇环节来了！」\n\n我小心翼翼地走进去，里面居然异常干净，而且...\n\n「卧槽！这洞窟里怎么有这么多奇怪的东西？」",
+        image: "1/震惊.png",
+        consumption: 3,
+        type: "dialogue",
+        next: "006"
+    },
+    "006": {
+        name: "我（熊）",
+        text: "洞窟中央的石台上，整齐地摆放着四样东西：\n\n🔸 一根看起来就很古老的箭（为什么它会飘字啊！！\"スタンド\"）\n🔸 一颗玻璃球（样式很别致，里面有三个逗号？）\n🔸 一绑着蝴蝶结的奇怪棒状物（很有少女气息）\n🔸 一瓶粉红色魔爪（原来还是有正常东西的啊！！\"）\n\n「这.这是什么地方？处处透露着诡异啊。」",
+        image: "1/震惊.png",
+        consumption: 5,
+        type: "dialogue",
+        next: "007"
+    },
+    "007": {
+        name: "我（暂时是熊）",
+        text: "看起来需要选择...\n\n这地方看起来不正常，一切小心为上。\n\n所以，我决定：",
+        consumption: 0,
+        type: "choice",
+        options: [
+            { text: "也许这个箭未来用得上？", target: "101" },
+            { text: "熊生没有什么娱乐，玩玻璃球解解闷吧！", target: "201" },
+            { text: "这是什么？拿一下试试", target: "301" },
+            { text: "来自人类文明的馈赠啊！已经很久没喝到饮料了！！", target: "401" },
+            { text: "我全都要!!", target: "801" },
+            { text: "「事已至此，先吃饭吧！」（无视所有物品，继续找倭倭头）", target: "901" }
+        ]
+    },
+    
+    // 替身使者路线 (101-200)
+"101": {
+    name: "我（暂时是熊）",
+    text: "「也许未来可以做出弓箭来狩猎更多倭倭头也说不定。」",
+    image: "1/开心.png",
+    consumption: 3,
+    type: "dialogue",
+    next: "102"
+},
+"102": {
+    name: "我（替身使熊）",
+    text: "「卧槽！这箭怎么在蠕动？！」\n\n箭突然像活了一样，直接钻进我的前肢！\n\n「啊啊啊！这是什么触手play啊？！」",
+    image: "1/替身箭.png",
+    consumption: 5,
+    type: "dialogue",
+    next: "103"
+},
+"103": {
+    name: "我（替身使熊）",
+    text: "剧痛之后，我感觉灵魂被抽离了身体！",
+    image: "1/灵魂出窍.png",
+    consumption: 6,
+    type: "dialogue",
+    next: "104"
+},
+"104": {
+    name: "我（替身使熊）",
+    text: "眼前浮现出一个金色的熊影，帅得一批！\n\n看着这个威武雄壮的熊影，我脱口而出：\n\n「tm熊啊！」\n\n替身似乎很满意这个名字，发出了【数据删除】的笑声。\n\n（此处本应有永雏塔菲笑声）",
+    image: "1/替身熊.png",
+    consumption: 4,
+    type: "dialogue",
+    next: "105"
+},
+"105": {
+    name: "我（熊TM的力量！）",
+    text: "接下来的几天，我慢慢接受了身边有熊形恶灵的生活。\n\n「还以为当时就要死掉了，我居然记不清我是怎么离开那里的。」\n\n不过有了熊形恶灵，找倭倭头容易多了。",
+    image: "1/替身熊.png",
+    consumption: 3,
+    type: "dialogue",
+    next: "106"
+},
+"106": {
+    name: "我（熊TM的力量！）",
+    text: "今天无意中发现了个牛逼能力！\n\n当我手里有调料时，【tm熊的力量！】会自动混合！\n\n「这难道是...传说中的料理替身？！」",
+    image: "1/替身熊1/开心.png",
+    consumption: 4,
+    type: "dialogue",
+    next: "107"
+},
+"107": {
+    name: "我（熊TM的力量！）",
+    text: "经过反复实验，我发现了规律：\n\n只要符合调料/流体这两个定义的物质，\n\n经过【tm熊的力量！】混合，就能对敌人进行【教给】！",
+    image: "1/替身熊.png",
+    consumption: 5,
+    type: "dialogue",
+    next: "108"
+},
+"108": {
+    name: "我（熊TM的力量！）",
+    text: "找了个不听话的倭倭头测试能力：\n\n「看我的秘制小酱料！」\n\n浇给之后，倭倭头直接瘫软，味道还提升了！",
+    image: "1/替身熊.png",
+    consumption: 6,
+    type: "dialogue",
+    next: "109"
+},
+"109": {
+    name: "我（熊TM的力量！）",
+    text: "获得【tm熊的力量！】后的生活真是多姿多彩：\n\n早上用替身找倭倭头，中午用能力调味，\n\n晚上和【tm熊的力量！】一起看星星。",
+    image: "1/替身熊1/开心.png",
+    consumption: 3,
+    type: "dialogue",
+    next: "110"
+},
+"110": {
+    name: "我（熊TM的力量！）",
+    text: "我发现浇给能力还能升级！\n\n不同的调料组合有不同效果：\n\n辣椒油能让敌人莫名其妙摔倒，\n\n蜂蜜能让敌人行动越发缓慢！",
+    image: "1/替身熊.png",
+    consumption: 5,
+    type: "dialogue",
+    next: "111"
+},
+"111": {
+    name: "我（熊TM的力量！）",
+    text: "今天遇到了个硬茬子——会忍术的倭倭头！\n\n他怎么也会召唤恶灵？\n\n看来今后的生活也不全是吃喝玩乐啊...",
+    image: "1/替身熊流血.png",
+    consumption: 6,
+    type: "dialogue",
+    next: "112"
+},
+"112": {
+    name: "我（熊TM的力量！）",
+    text: "经过一番苦战，终于用特制老八款酱料解决了对手。\n\n「原来战斗这么刺激！」\n\n我开始理解为什么动漫主角总是热血沸腾了。",
+    image: "1/替身熊流血.png",
+    consumption: 4,
+    type: "dialogue",
+    next: "113"
+},
+"113": {
+    name: "我（熊TM的力量！）",
+    text: "经过这段时间的恶灵生活，我陷入了思考：\n\n是继续当个快乐的干饭熊，还是追求更强的力量？\n\n【tm熊的力量！】在旁边默默等待我的决定...",
+    image: "1/替身熊.png",
+    consumption: 3,
+    type: "choice",
+    options: [
+        { text: "「年轻熊就是要有热血啊！战斗吧熊熊。」", target: "114" },
+        { text: "「恶灵是个好东西，使我每天多炫至少两个倭倭头！」", target: "115" }
+    ]
+},
+"114": {
+    name: "我（熊TM的力量！）",
+    text: "我要成为世界最强！让所有倭倭头都臣服在我的浇给之下！\n\n【tm熊的力量！】发出了兴奋的咆哮！\n\n从此，我踏上了寻找强敌的征程...",
+    image: "1/替身熊1/开心.png",
+    consumption: 8,
+    type: "tiaozhuan",
+    next: "1.html"
+},
+"115": {
+    name: "我（孤独的美食家）",
+    text: "「打打杀杀多没意思，还是干饭最重要！」\n\n我决定专注于开发新的浇给配方。\n\n目标是成为深山里的孤独美食家！\n\n（此处的bgm被拔叔借走了）",
+    image: "1/替身熊美食.png",
+    consumption: 7,
+    type: "dialogue",
+    next: "116"
+},
+"116": {
+    name: "结局：美食家熊",
+    text: "我开发出了108种浇给配方，成为了深山美食家！\n\n倭倭头们甚至主动来找我求浇给！\n\n果然，干饭才是熊生的终极意义！",
+    image: "1/替身熊美食.png",
+    consumption: 12,
+    type: "ending"
+},
+
+
+    // 写轮眼路线 (201-210)
+    "201": {
+        name: "我（安装写轮眼）",
+        text: "「这眼球怎么装？像美瞳一样吗？」\n\n眼球直接融进我眼睛！视野变红了！\n\n「一袋米要扛几楼！一袋米要扛二楼！」",
+        image: "sharingan_awakening.jpg",
+        consumption: 5,
+        type: "dialogue",
+        next: "202"
+    },
+    "202": {
+        name: "宇智波·熊",
+        text: "我看到了倭倭头的记忆！它们居然想统治世界！\n\n「原来如此，我吃它们是在拯救世界啊！」\n\n「这就是忍者的觉悟吗？」",
+        image: "sharingan_activated.jpg",
+        consumption: 3,
+        type: "ending"
+    },
+    
+    // 魔法少女路线 (301-310)
+    "301": {
+        name: "我（拿起御祝）",
+        text: "御祝发光了！一个声音响起：\n\n「和我签订契约，成为魔法熊少女吧！」\n\n「等等，我是公熊啊！而且魔法少女不应该有瘦瘦的腰吗？」",
+        image: "magical_girl_awakening.jpg",
+        consumption: 5,
+        type: "dialogue",
+        next: "302"
+    },
+    "302": {
+        name: "QB（丘比）",
+        text: "一只白色生物出现：\n\n「不用担心！魔法少女熊也是很受欢迎的！」\n\n「你该不会是来骗我变成魔女的吧？」",
+        image: "QB_appearance.jpg",
+        consumption: 3,
+        type: "ending"
+    },
+    
+    // 地雷女路线 (401-410)
+    "401": {
+        name: "我（喝魔爪）",
+        text: "「吨吨吨...这味道怎么像掺了核废水？」\n\n喝完我感觉整个人都重了！\n\n「呐呐~欧尼酱在哪里呀~」",
+        image: "yandere_awakening.jpg",
+        consumption: 5,
+        type: "dialogue",
+        next: "402"
+    },
+    "402": {
+        name: "我（地雷化）",
+        text: "我看到倭倭头就想把它关起来！\n\n「欧尼酱只能是我的！其他倭倭头都要消失！」\n\n「这设定太危险了！但我喜欢！」",
+        image: "yandere_transformation.jpg",
+        consumption: 3,
+        type: "ending"
+    },
+    
+    // 普通结局 (901-910)
+    "901": {
+        name: "我（理智选择）",
+        text: "「外挂什么的太麻烦了，还是干饭实在！」\n\n我继续寻找倭倭头，过着平静的熊生。\n\n「平平淡淡才是真！」",
+        image: "normal_bear_choice.jpg",
+        consumption: 5,
+        type: "ending"
+    }
+};
+
+
+
+        // 游戏状态变量
+        let currentStepId = "001";
+        let totalConsumption = 0;
+        let imageClickCount = 0;
+        const floatingMessages = [ "熊之力!", "替身觉醒!", "写轮眼!", "魔法少女!", "地雷女!", "欧拉欧拉!", "一袋米!", "呐呐!", "先吃饭!", "倭倭头真香!"];
+        const animationFiles = ["1.mp4", "2.mp4", "3.mp4"];
+
+        // 存储键名
+        const STORAGE_KEY = "xywmr_consumption";
+
+        // DOM元素获取
+        const sceneImage = document.getElementById('scene-image');
+        const dialogueText = document.getElementById('dialogue-text');
+        const characterName = document.getElementById('character-name');
+        const optionsBox = document.getElementById('options-box');
+        const historyList = document.getElementById('history-list');
+        const jumpInput = document.getElementById('jump-input');
+        const consumptionDisplay = document.getElementById('consumption-display');
+        const animationOverlay = document.getElementById('animation-overlay');
+        const animationText = document.getElementById('animation-text');
+        const imageContainer = document.getElementById('image-container');
+
+        // 保存食用次数到本地存储
+        function saveConsumptionToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, totalConsumption.toString());
+                console.log(`食用次数已保存到本地存储: ${totalConsumption}`);
+            } catch (e) {
+                console.error("保存食用次数到本地存储时出错:", e);
+            }
+        }
+
+        // 从本地存储加载食用次数
+        function loadConsumptionFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved !== null) {
+                    const parsed = parseInt(saved, 10);
+                    if (!isNaN(parsed)) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.error("从本地存储加载食用次数时出错:", e);
+            }
+            return 0;
+        }
+
+        // 更新食用次数显示
+        function updateConsumption(amount) {
+            totalConsumption += amount;
+            consumptionDisplay.textContent = `食用次数：${totalConsumption}`;
+            
+            // 保存到本地存储
+            saveConsumptionToStorage();
+            
+            // 添加动画效果
+            if (amount > 0) {
+                consumptionDisplay.style.transform = "scale(1.2)";
+                setTimeout(() => {
+                    consumptionDisplay.style.transform = "scale(1)";
+                }, 300);
+            }
+        }
+
+        // 添加到游戏日志
+        function appendToHistory(name, text, isEnding = false) {
+            const li = document.createElement('li');
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            li.innerHTML = isEnding 
+                ? `<strong style="color: var(--main-color);">[${timestamp}] ${name}</strong>: ${text}`
+                : `<strong>[${timestamp}] ${name}</strong>: ${text}`;
+            historyList.appendChild(li);
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+
+        // 跳转函数 - 支持内部跳转和外部链接
+        function goToStep(id) {
+    const data = gameData[id];
+    
+    if (!data) {
+        characterName.textContent = "系统错误";
+        dialogueText.textContent = `跳转编号 ${id} 不存在！`;
+        optionsBox.innerHTML = '<button onclick="goToStep(\'001\')">重新开始</button>';
+        return;
+    }
+    
+    // 累积食用次数
+    const consumptionAmount = data.consumption || 0;
+    if (consumptionAmount > 0) {
+        updateConsumption(consumptionAmount);
+    }
+    
+    // 更新图片
+    if (data.image) {
+        sceneImage.src = data.image;
+    }
+    
+    // 清空选项
+    optionsBox.innerHTML = '';
+    
+    // 设置当前步骤ID
+    currentStepId = id;
+    
+    // 根据步骤类型处理
+    switch(data.type) {
+        case "dialogue":
+            characterName.textContent = data.name;
+            dialogueText.textContent = data.text;
+            appendToHistory(data.name, data.text);
+            
+            if (data.next) {
+                const continueButton = document.createElement('button');
+                continueButton.textContent = "继续...";
+                continueButton.onclick = () => goToStep(data.next);
+                optionsBox.appendChild(continueButton);
+            } else {
+                const restartButton = document.createElement('button');
+                restartButton.textContent = "重新开始";
+                restartButton.onclick = () => restartGame();
+                optionsBox.appendChild(restartButton);
+            }
+            break;
+            
+        case "choice":
+            characterName.textContent = data.name || "做出你的选择";
+            dialogueText.textContent = data.text || "请选择下一步行动：";
+            
+            data.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                
+                // 检查是否是外部链接
+                if (option.external) {
+                    button.classList.add('external-link');
+                    button.onclick = () => jumpTo(option.external, true);
+                } else {
+                    button.onclick = () => {
+                        appendToHistory("选择", option.text);
+                        goToStep(option.target);
+                    };
+                }
+                
+                optionsBox.appendChild(button);
+            });
+            break;
+            
+        case "ending":
+            characterName.textContent = data.name;
+            dialogueText.textContent = data.text;
+            appendToHistory(data.name, data.text, true);
+            
+            const restartButton = document.createElement('button');
+            restartButton.textContent = "游戏结束 - 重新开始";
+            restartButton.className = "ending-style";
+            restartButton.onclick = () => restartGame();
+            optionsBox.appendChild(restartButton);
+            break;
+            
+        // 新增：tiaozhuan类型处理外部跳转
+        case "tiaozhuan":
+            characterName.textContent = data.name;
+            dialogueText.textContent = data.text + "\n\n正在跳转到外部页面...";
+            appendToHistory(data.name, data.text + " -> 跳转到: " + data.next);
+            
+            // 创建跳转按钮
+            const jumpButton = document.createElement('button');
+            jumpButton.textContent = "点击跳转";
+            jumpButton.classList.add('external-link');
+            jumpButton.onclick = () => {
+                window.location.href = data.next;
+            };
+            optionsBox.appendChild(jumpButton);
+            
+            // 可选：自动跳转（3秒后）
+            setTimeout(() => {
+                window.location.href = data.next;
+            }, 3000);
+            break;
+    }
+    
+    // 滚动到顶部
+    window.scrollTo(0, 0);
+}
+
+        // 重新开始游戏 - 添加了清零食用次数的功能
+        function restartGame() {
+            // 重置所有游戏状态
+            currentStepId = "001";
+            totalConsumption = 0;
+            imageClickCount = 0;
+            
+            // 更新食用次数显示
+            consumptionDisplay.textContent = "食用次数：0";
+            
+            // 清空本地存储中的食用次数
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                console.log("已清空本地存储中的食用次数");
+            } catch (e) {
+                console.error("清空本地存储时出错:", e);
+            }
+            
+            // 清空游戏日志
+            historyList.innerHTML = '';
+            
+            // 添加重启日志
+            appendToHistory("系统", "游戏重新开始，食用次数已清零");
+            
+            // 回到初始场景
+            goToStep("001");
+        }
+
+        // 手动跳转
+        function manualJump() {
+            const targetId = jumpInput.value.trim();
+            if (!targetId) {
+                alert("请输入跳转编号");
+                return;
+            }
+            
+            const paddedId = targetId.padStart(3, '0');
+            
+            if (gameData[paddedId]) {
+                goToStep(paddedId);
+                jumpInput.value = '';
+            } else {
+                alert(`编号 ${paddedId} 不存在，请检查输入。`);
+            }
+        }
+
+        // 创建飘字效果
+        function createFloatingText(message, x, y) {
+            const div = document.createElement('div');
+            div.className = 'floating-text';
+            div.textContent = message;
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
+            imageContainer.appendChild(div);
+
+            div.addEventListener('animationend', () => {
+                div.remove();
+            });
+        }
+
+        // 模拟播放动画
+        function playAnimation() {
+            const randomIndex = Math.floor(Math.random() * animationFiles.length);
+            const selectedAnimation = animationFiles[randomIndex];
+            
+            animationText.textContent = `正在播放动画：${selectedAnimation}`;
+            animationOverlay.style.display = 'flex';
+
+            setTimeout(() => {
+                animationOverlay.style.display = 'none';
+            }, 3000);
+        }
+
+        // 图片容器点击事件
+        imageContainer.addEventListener('click', (event) => {
+            if (animationOverlay.style.display === 'flex') return;
+            
+            imageClickCount++;
+            
+            // 飘字效果
+            const rect = imageContainer.getBoundingClientRect();
+            const relativeX = event.clientX - rect.left;
+            const relativeY = event.clientY - rect.top;
+            
+            const messageIndex = Math.floor(Math.random() * floatingMessages.length);
+            createFloatingText(floatingMessages[messageIndex], relativeX, relativeY);
+            
+            // 每8次点击播放动画
+            if (imageClickCount % 8 === 0) {
+                playAnimation();
+            }
+        });
+
+        // 允许按Enter键进行跳转
+        jumpInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                manualJump();
+            }
+        });
+
+        // 初始化游戏
+        window.onload = function() {
+            // 从本地存储加载食用次数
+            const savedConsumption = loadConsumptionFromStorage();
+            totalConsumption = savedConsumption;
+            consumptionDisplay.textContent = `食用次数：${totalConsumption}`;
+            
+            // 初始化日志
+            historyList.innerHTML = '';
+            appendToHistory("系统", "游戏开始");
+            
+            // 开始游戏
+            goToStep(currentStepId);
+        };
+
+        // 提供全局函数，供其他页面调用食用次数
+        window.getConsumptionCount = function() {
+            return loadConsumptionFromStorage();
+        };
+    </script>
+</body>
+</html>
